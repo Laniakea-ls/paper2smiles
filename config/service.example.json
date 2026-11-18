@@ -1,0 +1,11 @@
+{
+  "backend_url": "http://127.0.0.1:8118",
+  "jobs_root": "/var/lib/paper2smiles/jobs",
+  "identity_secret": "REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_32_CHARACTERS",
+  "audience": "paper2smiles",
+  "api_base": "https://newapi.livzon.cn/v1",
+  "model": "GPT-6-Luna",
+  "api_key": "",
+  "max_upload_bytes": 52428800,
+  "max_pages": 500
+}

@@ -1,0 +1,14 @@
+.git/
+.agents/
+.codex/
+.aws/
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.env*
+config/*.local.json
+runs/
+*.log
+.coverage
+.pytest_cache/

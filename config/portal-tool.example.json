@@ -1,0 +1,15 @@
+{
+  "key": "paper-sar",
+  "frontend_module": "paper-sar",
+  "enabled": true,
+  "name": "文献活性提取",
+  "page": "/paper-sar",
+  "api_prefix": "/api/paper-sar",
+  "transport": "http",
+  "backend_config": "/data2/aidd/aidd_platform/pipeline/paper2smiles/config/service.local.json",
+  "audience": "paper2smiles",
+  "methods": ["GET", "HEAD", "POST"],
+  "max_body_bytes": 52428800,
+  "description": "从文献 PDF 提取化合物结构、靶点与活性数据。",
+  "icon": "file-text"
+}
