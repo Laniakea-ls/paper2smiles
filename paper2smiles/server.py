@@ -9,6 +9,7 @@ from starlette.responses import JSONResponse,FileResponse
 from starlette.routing import Route
 from starlette.exceptions import HTTPException
 from paper2smiles.settings import ROOT,settings
+from paper2smiles.history import job_presentation,history_record
 
 STAGES={'plan':'识别文献','activity_ocr':'提取活性表','si_discovery':'查找补充材料','names':'提取完整名称','opsin':'名称转结构','reference_names':'核对名称','markush':'通式与片段连接','full_structure':'结构图识别','report':'生成报告','completed':'完成'}
 
@@ -57,7 +58,13 @@ def public_job(row):
             s=json.loads(summary.read_text());value['summary']={k:s[k] for k in ['title','doi','compounds','with_structure','measurements'] if k in s}
         except (OSError,ValueError):pass
     if row['status']=='completed':value['report_path']=f'/api/paper-sar/jobs/{jid}/files/report-data.json'
+    value.update(job_presentation(value,folder))
     return value
+
+async def history(request):
+    user=owner(request)
+    with connect() as con:rows=con.execute('SELECT * FROM jobs WHERE owner=? ORDER BY created DESC',(user,)).fetchall()
+    return JSONResponse({'records':[history_record(r,public_job(r)) for r in rows]},headers={'Cache-Control':'private, no-store'})
 
 async def health(request):
     owner(request);cfg=settings()
@@ -188,4 +195,4 @@ async def lifespan(app):
     except asyncio.CancelledError:pass
 
 async def error(request,exc):return JSONResponse({'error':exc.detail},status_code=exc.status_code)
-app=Starlette(routes=[Route('/health',health),Route('/jobs',jobs,methods=['GET','POST']),Route('/jobs/{job_id}',detail),Route('/jobs/{job_id}/cancel',cancel,methods=['POST']),Route('/jobs/{job_id}/retry',retry,methods=['POST']),Route('/jobs/{job_id}/files/{path:path}',artifact)],lifespan=lifespan,exception_handlers={HTTPException:error})
+app=Starlette(routes=[Route('/health',health),Route('/history',history),Route('/jobs',jobs,methods=['GET','POST']),Route('/jobs/{job_id}',detail),Route('/jobs/{job_id}/cancel',cancel,methods=['POST']),Route('/jobs/{job_id}/retry',retry,methods=['POST']),Route('/jobs/{job_id}/files/{path:path}',artifact)],lifespan=lifespan,exception_handlers={HTTPException:error})

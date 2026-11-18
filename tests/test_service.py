@@ -50,6 +50,30 @@ class ServiceTests(unittest.TestCase):
   p=base+'/cancel';self.client.post(p,headers=self.headers(p,'POST'))
   p=base+'/retry';self.assertEqual(self.client.post(p,headers=self.headers(p,'POST')).status_code,409)
   marker.unlink();self.assertEqual(self.client.post(p,headers=self.headers(p,'POST')).status_code,200)
+ def test_history_owner_status_and_report_actions(self):
+  jid=self.create();folder=Path(self.temp.name)/jid
+  report=folder/'report';(report/'downloads').mkdir(parents=True)
+  (report/'downloads/Article title.xlsx').write_bytes(b'PK')
+  (report/'report-data.json').write_text(json.dumps({'excel_download':'downloads/Article title.xlsx'}))
+  (folder/'summary.json').write_text(json.dumps({'title':'Article title'}))
+  with server.connect() as con:con.execute("UPDATE jobs SET status='completed' WHERE id=?",(jid,))
+  r=self.client.get('/history',headers=self.headers('/history'))
+  self.assertEqual(r.status_code,200);record=r.json()['records'][0]
+  self.assertEqual(record['job_id'],'paper_sar_'+jid)
+  self.assertEqual(record['summary'],'Article title')
+  self.assertTrue(record['download_path'].endswith('Article%20title.xlsx'))
+  self.assertIn('/reports/literature-ui/',record['view_path'])
+  self.assertTrue(all(s['status']=='completed' for s in record['steps']))
+  self.assertFalse(record['can_stop'])
+  self.assertEqual(self.client.get('/history?user=user-a&scope=all',headers=self.headers('/history',user='user-b')).json()['records'],[])
+  with server.connect() as con:con.execute("UPDATE jobs SET status='cancelled' WHERE id=?",(jid,))
+  record=self.client.get('/history',headers=self.headers('/history')).json()['records'][0]
+  self.assertEqual(record['status'],'stopped');self.assertFalse(record['view_path'])
+ def test_history_includes_records_beyond_recent_jobs(self):
+  with server.connect() as con:
+   for i in range(105):con.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?,?,?)',(f'{i:032x}','user-a',f'{i}.pdf',str(i),'failed',i,i,''))
+  self.assertEqual(len(self.client.get('/history',headers=self.headers('/history')).json()['records']),105)
+  self.assertEqual(len(self.client.get('/jobs',headers=self.headers('/jobs')).json()['jobs']),100)
  def test_shutdown_terminates_active_subprocess(self):
   jid=self.create();spawn=asyncio.create_subprocess_exec;children=[]
   async def scenario():

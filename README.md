@@ -2,7 +2,7 @@
 
 文献活性提取后端。上传 PDF 后，先确定具有数值或测定限值的活性编号，再按作者 SI → 原文完整名称 / OPSIN → 通式连接 → 完整结构图三模型识别的顺序寻找结构。完整结构图的三模型预测中，两路规范化 SMILES 一致即可采用；无共识的结果保留待核对。
 
-本仓库只维护 Python API、提取流程、报告数据、结构图片与 Excel 导出。前端在 [aidd_portal_frontend](https://github.com/Laniakea-ls/aidd_portal_frontend)：`src/tools/paper-sar` 使用现有 React / shadcn 组件；`src/tools/literature-report` 渲染报告。
+本仓库只维护 Python API、提取流程、报告数据、结构图片与 Excel 导出。前端在 [aidd_portal_frontend](https://github.com/Laniakea-ls/aidd_portal_frontend)：`src/tools/paper-sar` 复用 SAR 的 WorkflowShell、上传控件和结果组件；`src/tools/literature-report` 渲染报告。
 
 ## 运行
 
@@ -25,6 +25,7 @@ Portal 使用现有 `tool_gateway` 注册 `config/portal-tool.example.json` 中�
 
 - `GET /health`：配置状态。
 - `POST /jobs?filename=article.pdf`：以 `application/pdf` 上传 PDF，返回任务编号；最多 50 MB / 500 页。
+- `GET /history`：门户统一历史记录（按登录用户隔离，包含状态、进度、报告及 Excel 操作）。
 - `GET /jobs`、`GET /jobs/{id}`：当前用户的任务列表、阶段、汇总和报告路径。
 - `POST /jobs/{id}/cancel`、`POST /jobs/{id}/retry`：取消或从已有检查点重试。
 - `GET /jobs/{id}/files/report-data.json`、`assets/*`、`downloads/*`：已完成任务的报告、图片和 Excel。
