@@ -7,6 +7,7 @@ Type=simple
 User=shengli
 WorkingDirectory=/data2/aidd/aidd_platform/pipeline/paper2smiles
 Environment=PAPER2SMILES_CONFIG=/data2/aidd/aidd_platform/pipeline/paper2smiles/config/service.local.json
+Environment=PAPER2SMILES_HOME=/data2/aidd/aidd_platform/pipeline/paper2smiles
 Environment=PYTHONUNBUFFERED=1
 ExecStart=/data2/aidd/aidd_platform/pipeline/paper2smiles/.venv/bin/python -m uvicorn paper2smiles.server:app --host 127.0.0.1 --port 8118 --workers 1
 Restart=on-failure

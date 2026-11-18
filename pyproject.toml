@@ -1,14 +1,47 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "paper2smiles"
 version = "1.0.0"
-description = "Evidence-preserving extraction of compound structures and activities from literature PDFs"
+description = "Evidence-preserving compound and activity extraction from literature PDFs"
+readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["starlette>=0.40", "uvicorn>=0.30", "httpx>=0.27", "requests>=2.31", "openpyxl>=3.1", "PyMuPDF==1.24.14", "rdkit==2026.3.1", "Pillow>=10", "beautifulsoup4>=4.12"]
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "httpx>=0.27",
+    "numpy>=1.26,<3",
+    "openpyxl>=3.1",
+    "Pillow>=10",
+    "PyMuPDF==1.24.14",
+    "rdkit==2026.3.1",
+    "requests>=2.31",
+    "starlette>=0.40",
+    "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+dev = ["build>=1.2,<2", "ruff>=0.14,<1"]
+
+[project.scripts]
+paper2smiles-extract = "paper2smiles.extraction.workflow:main"
+paper2smiles-batch = "paper2smiles.extraction.batch:main"
+paper2smiles-table-ocr = "paper2smiles.extraction.run_table_ocr:main"
 
 [tool.setuptools.packages.find]
-include = ["paper2smiles*", "tools.paper_si_workflow*"]
-exclude = ["*.tests*", "*.trials*"]
+where = ["src"]
+
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]

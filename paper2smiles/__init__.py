@@ -1,2 +1,0 @@
-"""Paper2SMILES: literature structure/activity extraction backend."""
-__version__ = '1.0.0'

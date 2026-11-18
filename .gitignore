@@ -12,3 +12,6 @@ runs/
 *.log
 .coverage
 .pytest_cache/
+.ruff_cache/
+build/
+dist/

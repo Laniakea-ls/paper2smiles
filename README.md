@@ -17,7 +17,7 @@ chmod 600 config/service.local.json
 .venv/bin/python -m uvicorn paper2smiles.server:app --host 127.0.0.1 --port 8118 --workers 1
 ```
 
-`PAPER2SMILES_CONFIG` 可指定配置路径；`PAPER_SI_API_KEY` 可覆盖模型密钥。模型默认 `GPT-6-Luna`，标识区分大小写。部署可使用 `deploy/paper2smiles.service`，先调整工作目录与 Python 路径。
+`PAPER2SMILES_HOME` 指定运行数据根目录（默认当前工作目录）；`PAPER2SMILES_CONFIG` 可指定配置路径；`PAPER_SI_API_KEY` 可覆盖模型密钥。模型默认 `GPT-6-Luna`，标识区分大小写。部署可使用 `deploy/paper2smiles.service`，先调整工作目录与 Python 路径。
 
 Portal 使用现有 `tool_gateway` 注册 `config/portal-tool.example.json` 中的工具配置。网关验证登录后签发绑定用户、请求方法和路径的短期 HS256 JWT；后端仅监听回环地址。前端通过 `/api/paper-sar` 访问后端，不持有模型或服务密钥。
 
@@ -34,9 +34,34 @@ SQLite 保存队列，单 worker 控制模型资源占用，重启后恢复未�
 
 Excel 以文章标题命名，包含化合物编号、SMILES、2D 结构、实验条件、合并的活性列和出处。正文与 SI 原始数据保留来源区别。无法确认的结构不补造；三模型一致仅代表识别共识，不代表独立准确率。
 
-## 检查
+## 仓库结构
+
+```text
+src/paper2smiles/    Python 包
+  server.py         应用工厂与依赖组装
+  api.py            ExtractionAPI：请求处理
+  authentication.py GatewayAuthenticator：网关身份验证
+  jobs/             JobRepository、JobPresenter、JobRunner
+  worker.py         ExtractionWorker：单任务执行
+  extraction/       提取流程、结构解析与 ReportBuilder
+tests/             unit/ 提取测试；service/ API 与队列测试
+scripts/experiments/ 历史实验脚本，不随包安装
+config/             配置示例（本地配置不入库）
+deploy/             systemd 部署配置
+```
+
+流程由 `ActivityWorkflow` 管理，报告由 `ReportBuilder` 生成；服务通过应用工厂注入配置，每个实例拥有独立依赖。无状态的化学解析和数值转换保留为函数。Python 使用 PEP 8 风格、79 列格式与 NumPy 风格文档字符串。
+
+## 开发与检查
 
 ```sh
+.venv/bin/pip install -e '.[dev]'
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
 .venv/bin/python -m unittest discover -s tests -v
-.venv/bin/python -m unittest discover -s tools/paper_si_workflow/tests -v
+.venv/bin/python -m build
 ```
+
+测试需要上述部署环境中的化学依赖。`src` 布局要求先安装包；请勿通过修改 `sys.path` 导入源码。运行数据 `runs/`、本地配置、模型权重和构建产物不提交。
+
+安装后也可使用 `paper2smiles-extract`、`paper2smiles-batch` 和 `paper2smiles-table-ocr` 命令；使用 `--help` 查看参数。
