@@ -4,7 +4,7 @@
   "identity_secret": "REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_32_CHARACTERS",
   "audience": "paper2smiles",
   "api_base": "https://newapi.livzon.cn/v1",
-  "model": "GPT-6-Luna",
+  "model": "deepseek-v4.1-flash",
   "api_key": "",
   "max_upload_bytes": 52428800,
   "max_pages": 500

@@ -84,6 +84,49 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(r.status_code, 202, r.text)
         return r.json()["id"]
 
+    def test_delete_terminal_history_and_files(self):
+        job_id = self.create()
+        path = f"/jobs/{job_id}/delete"
+        headers = self.headers(path, "POST")
+        folder = self.repository.directory() / job_id
+        self.assertEqual(
+            self.client.post(path, headers=headers).status_code, 409
+        )
+        for state in ("failed", "cancelled", "completed"):
+            with self.subTest(state=state):
+                with self.repository.connect() as con:
+                    con.execute(
+                        "UPDATE jobs SET status=? WHERE id=?", (state, job_id)
+                    )
+                foreign = self.headers(path, "POST", "user-b")
+                self.assertEqual(
+                    self.client.post(path, headers=foreign).status_code, 404
+                )
+                marker = folder / ".worker-running"
+                marker.touch()
+                self.assertEqual(
+                    self.client.post(path, headers=headers).status_code, 409
+                )
+                marker.unlink()
+                history = self.client.get(
+                    "/history", headers=self.headers("/history")
+                )
+                self.assertTrue(history.json()["records"][0]["can_delete"])
+                self.assertEqual(
+                    self.client.post(path, headers=headers).status_code, 200
+                )
+                self.assertFalse(folder.exists())
+                self.assertFalse(
+                    self.client.get(
+                        "/history", headers=self.headers("/history")
+                    ).json()["records"]
+                )
+                if state != "completed":
+                    job_id = self.create()
+                    path = f"/jobs/{job_id}/delete"
+                    headers = self.headers(path, "POST")
+                    folder = self.repository.directory() / job_id
+
     def test_identity_is_method_and_path_bound(self):
         self.assertEqual(self.client.get("/jobs").status_code, 401)
         self.assertEqual(

@@ -49,7 +49,9 @@ def main():
         print("START", item["id"], item["filename"], flush=True)
         started = time.time()
         try:
-            llm = Luna(key, "https://newapi.livzon.cn/v1", "GPT-6-Luna", dest)
+            llm = Luna(
+                key, "https://newapi.livzon.cn/v1", "deepseek-v4.1-flash", dest
+            )
             (Workflow if a.legacy_si_first else ActivityWorkflow)(
                 item["path"], dest, llm
             ).run()

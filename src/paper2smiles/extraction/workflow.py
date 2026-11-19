@@ -1400,7 +1400,7 @@ def main():
     parser.add_argument("--pdf", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--api-base", default="https://newapi.livzon.cn/v1")
-    parser.add_argument("--model", default="GPT-6-Luna")
+    parser.add_argument("--model", default="deepseek-v4.1-flash")
     args = parser.parse_args()
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)

@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+import shutil
 import time
 import uuid
 from pathlib import Path
@@ -239,6 +240,23 @@ class ExtractionAPI:
             Client-visible details for the requested job.
         """
         return JSONResponse(self.presenter.present(self.get_job(request)))
+
+    async def delete(self, request):
+        """Delete an owned terminal job and its private artifacts."""
+        row = self.get_job(request)
+        folder = self.repository.directory() / row["id"]
+        with self.repository.connect() as con:
+            con.execute("BEGIN IMMEDIATE")
+            removed = con.execute(
+                "DELETE FROM jobs WHERE id=? AND owner=? "
+                "AND status IN ('completed','failed','cancelled')",
+                (row["id"], row["owner"]),
+            )
+            if not removed.rowcount or (folder / ".worker-running").exists():
+                raise HTTPException(409, "任务仍在运行或停止中，请稍后再试")
+            if folder.exists():
+                shutil.rmtree(folder)
+        return JSONResponse({"deleted": True})
 
     async def cancel(self, request):
         """Mark an owned queued or running job for cancellation.

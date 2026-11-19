@@ -22,7 +22,7 @@ def settings():
     )
     data = json.loads(path.read_text()) if path.exists() else {}
     data.setdefault("jobs_root", str(ROOT / "runs/jobs"))
-    data.setdefault("model", "GPT-6-Luna")
+    data.setdefault("model", "deepseek-v4.1-flash")
     data.setdefault("api_base", "https://newapi.livzon.cn/v1")
     data["api_key"] = os.environ.get("PAPER_SI_API_KEY") or data.get(
         "api_key", ""

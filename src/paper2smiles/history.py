@@ -103,7 +103,7 @@ def history_record(row, job):
         "steps": job["steps"],
         "error": job.get("error", ""),
         "can_stop": status in ("queued", "running"),
-        "can_delete": False,
+        "can_delete": status in ("completed", "failed", "stopped"),
         "run_url": "/paper-sar?run=" + job["id"] + "&view=history",
         "report_url": job["report_url"],
         "view_path": job["report_url"] or None,

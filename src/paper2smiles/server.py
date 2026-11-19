@@ -38,6 +38,7 @@ def create_app(config_provider: Callable[[], dict] = settings) -> Starlette:
             Route("/history", api.history),
             Route("/jobs", api.jobs, methods=["GET", "POST"]),
             Route("/jobs/{job_id}", api.detail),
+            Route("/jobs/{job_id}/delete", api.delete, methods=["POST"]),
             Route("/jobs/{job_id}/cancel", api.cancel, methods=["POST"]),
             Route("/jobs/{job_id}/retry", api.retry, methods=["POST"]),
             Route("/jobs/{job_id}/files/{path:path}", api.artifact),

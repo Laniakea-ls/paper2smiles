@@ -18,6 +18,9 @@ STAGES = {
 }
 
 
+MODEL_BILLING_ERROR = "模型服务返回计费错误（ACCOUNT_BALANCE_ERROR）。"
+
+
 class JobPresenter:
     """Present persisted jobs without exposing private worker state.
 
@@ -58,6 +61,8 @@ class JobPresenter:
                 "error",
             )
         }
+        if value["error"] == "模型 API 余额不足，请联系管理员充值后重试。":
+            value["error"] = MODEL_BILLING_ERROR
         status = folder / "status.json"
         if status.exists():
             try:

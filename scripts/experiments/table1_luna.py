@@ -13,7 +13,7 @@ def main():
     llm = Luna(
         getpass.getpass("API key (hidden): "),
         "https://newapi.livzon.cn/v1",
-        "GPT-6-Luna",
+        "deepseek-v4.1-flash",
         root,
     )
     prompt = (

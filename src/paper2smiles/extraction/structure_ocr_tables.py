@@ -114,12 +114,13 @@ def schema_review(model, table):
         },
         ensure_ascii=False,
     )
-    return model.ask(
+    schema = model.ask(
         "ocr_table_schema_" + str(table["table_number"]),
         prompt,
         [Path(table["image"])],
         max_tokens=7000,
     )
+    return {**schema, "schema_model": model.model}
 
 
 def compile_table(table, schema):
@@ -219,12 +220,14 @@ def compile_all(root, tables):
         OCR table records and their original image metadata.
     """
     output = []
+    models = set()
     for table in tables:
         schema = json.loads(
             (
                 root / "schemas" / f"table-{table['table_number']}.json"
             ).read_text()
         )
+        models.add(schema.get("schema_model", "GPT-6-Luna"))
         output.append(compile_table(table, schema))
     save(root / "tables.json", output)
     rows = [r for table in output for r in table["rows"]]
@@ -255,9 +258,9 @@ def compile_all(root, tables):
         ("ocr_engine"): (
             "PaddleOCR-VL-1.6-0.9B + PP-DocLayoutV3 (existing local services)"
         ),
-        "schema_model": "GPT-6-Luna",
+        "schema_model": ", ".join(sorted(models)),
         ("numeric_value_source"): (
-            "PaddleOCR cells; Luna only interprets headers/footnotes"
+            "PaddleOCR cells; model only interprets headers/footnotes"
         ),
         "no_si_or_prior_extraction_values_used": True,
         ("scope"): (
@@ -288,7 +291,7 @@ def main():
         if not args.compile_only:
             key = getpass.getpass("API key (hidden; memory only): ")
             model = Luna(
-                key, "https://newapi.livzon.cn/v1", "GPT-6-Luna", root
+                key, "https://newapi.livzon.cn/v1", "deepseek-v4.1-flash", root
             )
             with ThreadPoolExecutor(max_workers=2) as pool:
                 jobs = {

@@ -8,6 +8,7 @@ import sys
 import time
 from contextlib import asynccontextmanager
 
+from paper2smiles.jobs.presentation import MODEL_BILLING_ERROR
 from paper2smiles.settings import ROOT
 
 
@@ -115,10 +116,7 @@ class JobRunner:
                                     (folder / "status.json").read_text()
                                 ).get("error", "")
                                 if "ACCOUNT_BALANCE_ERROR" in failure:
-                                    message = (
-                                        "模型 API 余额不足，请联系管理员充值后"
-                                        "重试。"
-                                    )
+                                    message = MODEL_BILLING_ERROR
                                 elif "model_not_found" in failure:
                                     message = (
                                         "模型 API 暂无可用通道，请联系管理员。"

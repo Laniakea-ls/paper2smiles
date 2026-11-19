@@ -17,7 +17,7 @@ chmod 600 config/service.local.json
 .venv/bin/python -m uvicorn paper2smiles.server:app --host 127.0.0.1 --port 8118 --workers 1
 ```
 
-`PAPER2SMILES_HOME` 指定运行数据根目录（默认当前工作目录）；`PAPER2SMILES_CONFIG` 可指定配置路径；`PAPER_SI_API_KEY` 可覆盖模型密钥。模型默认 `GPT-6-Luna`，标识区分大小写。部署可使用 `deploy/paper2smiles.service`，先调整工作目录与 Python 路径。
+`PAPER2SMILES_HOME` 指定运行数据根目录（默认当前工作目录）；`PAPER2SMILES_CONFIG` 可指定配置路径；`PAPER_SI_API_KEY` 可覆盖模型密钥。模型默认 `deepseek-v4.1-flash`，标识区分大小写。部署可使用 `deploy/paper2smiles.service`，先调整工作目录与 Python 路径。
 
 Portal 使用现有 `tool_gateway` 注册 `config/portal-tool.example.json` 中的工具配置。网关验证登录后签发绑定用户、请求方法和路径的短期 HS256 JWT；后端仅监听回环地址。前端通过 `/api/paper-sar` 访问后端，不持有模型或服务密钥。
 
